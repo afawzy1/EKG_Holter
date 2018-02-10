@@ -52,7 +52,7 @@
 #include "fatfs.h"
 
 /* USER CODE BEGIN Includes */
-
+#include "stm32_topway_16x2.h"
 /* USER CODE END Includes */
 
 /* Private variables ---------------------------------------------------------*/
@@ -108,7 +108,8 @@ int main(void)
   HAL_Init();
 
   /* USER CODE BEGIN Init */
-
+  LCD1602_Begin4BIT(LCD_RS_GPIO_Port, LCD_RS_Pin, LCD_EN_Pin, LCD_D0_GPIO_Port, LCD_D0_Pin, LCD_D1_Pin, LCD_D2_Pin, LCD_D3_Pin);
+  LCD1602_print("System Startup");
   /* USER CODE END Init */
 
   /* Configure the system clock */
