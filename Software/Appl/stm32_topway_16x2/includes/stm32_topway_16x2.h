@@ -86,6 +86,6 @@ void LCD1602_shiftToLeft(uint8_t num);
 
 //********** Print numbers to LCD **********//
 //1. Integer
-void LCD1602_PrintInt(int number);
+void LCD1602_PrintInt(int number, uint8_t digitnumber);
 //2. Float
 void LCD1602_PrintFloat(float number, int decimalPoints);

@@ -367,10 +367,24 @@ void LCD1602_shiftToLeft(uint8_t num)
 
 //********** Print numbers to LCD **********//
 //1. Integer
-void LCD1602_PrintInt(int number)
+void LCD1602_PrintInt(int number, uint8_t digitnumber)
 {
 	char numStr[16];
-	sprintf(numStr,"%d", number);
+	switch (digitnumber)
+	{
+		case 1:
+			sprintf(numStr,"%d", number);
+		break;
+		case 2:
+			sprintf(numStr,"%.2d", number);
+		break;
+		case 3:
+			sprintf(numStr,"%.3d", number);
+		break;
+		default:
+			sprintf(numStr,"%d", number);
+		break;
+	}
 	LCD1602_print(numStr);
 }
 //2. Float
