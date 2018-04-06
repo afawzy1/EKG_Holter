@@ -56,8 +56,8 @@
 
 /* Private define ------------------------------------------------------------*/
 
-#define LEADI_Pin GPIO_PIN_0
-#define LEADI_GPIO_Port GPIOA
+#define VBat_Pin GPIO_PIN_0
+#define VBat_GPIO_Port GPIOA
 #define LEADII_Pin GPIO_PIN_1
 #define LEADII_GPIO_Port GPIOA
 #define LEADIII_Pin GPIO_PIN_2

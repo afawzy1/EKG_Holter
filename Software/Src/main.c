@@ -51,12 +51,15 @@
 #include "cmsis_os.h"
 #include "fatfs.h"
 
+
 /* USER CODE BEGIN Includes */
 #include "stm32_topway_16x2.h"
+#include "RTC_user_init.h"
 /* USER CODE END Includes */
 
 /* Private variables ---------------------------------------------------------*/
 ADC_HandleTypeDef hadc1;
+DMA_HandleTypeDef hdma_adc1;
 
 RTC_HandleTypeDef hrtc;
 
@@ -70,17 +73,23 @@ osThreadId MonitorKeysHandle;
 osThreadId WriteSDHandle;
 osThreadId TimeCountHandle;
 osThreadId BLK_EN_TaskHandle;
+osThreadId VBat_MonitorHandle;
 osMessageQId KeysCommandHandle;
 osMessageQId BLK_EN_QHandle;
 
 /* USER CODE BEGIN PV */
-/* Private variables ---------------------------------------------------------*/
+/* Type definitions ---------------------------------------------------------*/
 
+/* Private variables ---------------------------------------------------------*/
+static volatile uint16_t dma_buffer[16];
+uint16_t Adc_values[16];
+static volatile uint16_t Vbat_value;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
+static void MX_DMA_Init(void);
 static void MX_ADC1_Init(void);
 static void MX_SDIO_SD_Init(void);
 static void MX_USART6_UART_Init(void);
@@ -91,6 +100,7 @@ void StartMonitorKeys(void const * argument);
 void StartWriteSD(void const * argument);
 void StartTimeCount(void const * argument);
 void Start_BLKEN(void const * argument);
+void Read_Vbat(void const * argument);
 
 /* USER CODE BEGIN PFP */
 /* Private function prototypes -----------------------------------------------*/
@@ -98,6 +108,14 @@ void Start_BLKEN(void const * argument);
 /* USER CODE END PFP */
 
 /* USER CODE BEGIN 0 */
+void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef* hadc)
+{
+	uint8_t indx = 0;
+	for(indx = 0; indx < 16; indx++)
+	{
+		Adc_values[indx] = dma_buffer[indx];
+	}
+}
 
 /* USER CODE END 0 */
 
@@ -105,7 +123,7 @@ int main(void)
 {
 
   /* USER CODE BEGIN 1 */
-	//uint16_t ThirtySecDelay = (uint16_t)30000;
+
   /* USER CODE END 1 */
 
   /* MCU Configuration----------------------------------------------------------*/
@@ -126,6 +144,7 @@ int main(void)
 
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
+  MX_DMA_Init();
   MX_ADC1_Init();
   MX_SDIO_SD_Init();
   MX_USART6_UART_Init();
@@ -137,7 +156,9 @@ int main(void)
 	LCD1602_noCursor();
 	LCD1602_noBlink();
 	LCD1602_clear();
-	
+	HAL_ADC_Start(&hadc1);
+	HAL_ADC_Start_DMA(&hadc1, (uint32_t*)dma_buffer, 16);
+	SetSystemTime();
   /* USER CODE END 2 */
 
   /* USER CODE BEGIN RTOS_MUTEX */
@@ -176,6 +197,10 @@ int main(void)
   /* definition and creation of BLK_EN_Task */
   osThreadDef(BLK_EN_Task, Start_BLKEN, osPriorityIdle, 0, 128);
   BLK_EN_TaskHandle = osThreadCreate(osThread(BLK_EN_Task), NULL);
+
+  /* definition and creation of VBat_Monitor */
+  osThreadDef(VBat_Monitor, Read_Vbat, osPriorityIdle, 0, 128);
+  VBat_MonitorHandle = osThreadCreate(osThread(VBat_Monitor), NULL);
 
   /* USER CODE BEGIN RTOS_THREADS */
   /* add threads, ... */
@@ -283,20 +308,21 @@ static void MX_ADC1_Init(void)
 {
 
   ADC_ChannelConfTypeDef sConfig;
+  ADC_InjectionConfTypeDef sConfigInjected;
 
     /**Configure the global features of the ADC (Clock, Resolution, Data Alignment and number of conversion) 
     */
   hadc1.Instance = ADC1;
-  hadc1.Init.ClockPrescaler = ADC_CLOCK_SYNC_PCLK_DIV2;
+  hadc1.Init.ClockPrescaler = ADC_CLOCK_SYNC_PCLK_DIV8;
   hadc1.Init.Resolution = ADC_RESOLUTION_12B;
-  hadc1.Init.ScanConvMode = DISABLE;
-  hadc1.Init.ContinuousConvMode = DISABLE;
+  hadc1.Init.ScanConvMode = ENABLE;
+  hadc1.Init.ContinuousConvMode = ENABLE;
   hadc1.Init.DiscontinuousConvMode = DISABLE;
   hadc1.Init.ExternalTrigConvEdge = ADC_EXTERNALTRIGCONVEDGE_NONE;
   hadc1.Init.ExternalTrigConv = ADC_SOFTWARE_START;
   hadc1.Init.DataAlign = ADC_DATAALIGN_RIGHT;
   hadc1.Init.NbrOfConversion = 1;
-  hadc1.Init.DMAContinuousRequests = DISABLE;
+  hadc1.Init.DMAContinuousRequests = ENABLE;
   hadc1.Init.EOCSelection = ADC_EOC_SINGLE_CONV;
   if (HAL_ADC_Init(&hadc1) != HAL_OK)
   {
@@ -305,10 +331,26 @@ static void MX_ADC1_Init(void)
 
     /**Configure for the selected ADC regular channel its corresponding rank in the sequencer and its sample time. 
     */
-  sConfig.Channel = ADC_CHANNEL_0;
+  sConfig.Channel = ADC_CHANNEL_1;
   sConfig.Rank = 1;
-  sConfig.SamplingTime = ADC_SAMPLETIME_3CYCLES;
+  sConfig.SamplingTime = ADC_SAMPLETIME_480CYCLES;
   if (HAL_ADC_ConfigChannel(&hadc1, &sConfig) != HAL_OK)
+  {
+    _Error_Handler(__FILE__, __LINE__);
+  }
+
+    /**Configures for the selected ADC injected channel its corresponding rank in the sequencer and its sample time 
+    */
+  sConfigInjected.InjectedChannel = ADC_CHANNEL_0;
+  sConfigInjected.InjectedRank = 1;
+  sConfigInjected.InjectedNbrOfConversion = 1;
+  sConfigInjected.InjectedSamplingTime = ADC_SAMPLETIME_3CYCLES;
+  sConfigInjected.ExternalTrigInjecConvEdge = ADC_EXTERNALTRIGINJECCONVEDGE_NONE;
+  sConfigInjected.ExternalTrigInjecConv = ADC_INJECTED_SOFTWARE_START;
+  sConfigInjected.AutoInjectedConv = DISABLE;
+  sConfigInjected.InjectedDiscontinuousConvMode = DISABLE;
+  sConfigInjected.InjectedOffset = 0;
+  if (HAL_ADCEx_InjectedConfigChannel(&hadc1, &sConfigInjected) != HAL_OK)
   {
     _Error_Handler(__FILE__, __LINE__);
   }
@@ -412,6 +454,21 @@ static void MX_USART6_UART_Init(void)
   {
     _Error_Handler(__FILE__, __LINE__);
   }
+
+}
+
+/** 
+  * Enable DMA controller clock
+  */
+static void MX_DMA_Init(void) 
+{
+  /* DMA controller clock enable */
+  __HAL_RCC_DMA2_CLK_ENABLE();
+
+  /* DMA interrupt init */
+  /* DMA2_Stream0_IRQn interrupt configuration */
+  HAL_NVIC_SetPriority(DMA2_Stream0_IRQn, 5, 0);
+  HAL_NVIC_EnableIRQ(DMA2_Stream0_IRQn);
 
 }
 
@@ -581,6 +638,22 @@ void Start_BLKEN(void const * argument)
   /* USER CODE END Start_BLKEN */
 }
 
+/* Read_Vbat function */
+void Read_Vbat(void const * argument)
+{
+  /* USER CODE BEGIN Read_Vbat */
+  /* Infinite loop */
+  for(;;)
+  {
+		HAL_ADCEx_InjectedStart(&hadc1);
+		HAL_ADC_PollForConversion(&hadc1, 100);
+		Vbat_value = (uint16_t)HAL_ADCEx_InjectedGetValue(&hadc1, ADC_INJECTED_RANK_1);
+		HAL_ADCEx_InjectedStop(&hadc1);
+    osDelay(500);
+  }
+  /* USER CODE END Read_Vbat */
+}
+
 /**
   * @brief  Period elapsed callback in non blocking mode
   * @note   This function is called  when TIM1 interrupt took place, inside
@@ -616,6 +689,7 @@ void _Error_Handler(char * file, int line)
   }
   /* USER CODE END Error_Handler_Debug */ 
 }
+
 
 #ifdef USE_FULL_ASSERT
 

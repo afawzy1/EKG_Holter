@@ -381,6 +381,9 @@ void LCD1602_PrintInt(int number, uint8_t digitnumber)
 		case 3:
 			sprintf(numStr,"%.3d", number);
 		break;
+		case 4:
+			sprintf(numStr,"%.4d", number);
+		break;
 		default:
 			sprintf(numStr,"%d", number);
 		break;
