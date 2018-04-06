@@ -189,7 +189,7 @@ static void SetYear(void)
 		state = YearInit;
 		MX_RTC_UserInit(hours, minutes,seconds,days,months, years);
 		LCD1602_clear();
-		return ;
+		state = FinishSet;
 	}
 	else if (!HAL_GPIO_ReadPin(KEYLEFT_GPIO_Port, KEYLEFT_Pin))
 	{
@@ -234,6 +234,8 @@ void SetSystemTime(void)
 			case YearInit:
 				SetYear();
 				break;
+			case FinishSet:
+				return;
 			default:
 				break;
 		}

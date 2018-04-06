@@ -9,7 +9,8 @@ typedef enum
 	SecondsInit,
 	DayInit,
 	MonthInit,
-	YearInit
+	YearInit,
+	FinishSet
 } State_t;
 
 
