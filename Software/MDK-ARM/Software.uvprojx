@@ -599,6 +599,11 @@
               <FileType>1</FileType>
               <FilePath>../Src/stm32f4xx_hal_timebase_TIM.c</FilePath>
             </File>
+            <File>
+              <FileName>RTC_user_Init.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\RTC_user_Init.c</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>
