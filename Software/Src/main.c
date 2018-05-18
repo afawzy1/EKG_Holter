@@ -144,21 +144,21 @@ int main(void)
 
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
-  MX_DMA_Init();
+  MX_DMA_Init(); 
   MX_ADC1_Init();
   MX_SDIO_SD_Init();
-  MX_USART6_UART_Init();
+  MX_USART6_UART_Init(); 
   MX_RTC_Init();
 
   /* USER CODE BEGIN 2 */
   LCD1602_Begin4BIT(LCD_RS_GPIO_Port, LCD_RS_Pin, LCD_EN_Pin, 
-					LCD_D0_GPIO_Port, LCD_D0_Pin, LCD_D1_Pin, LCD_D2_Pin, LCD_D3_Pin);
-	LCD1602_noCursor();
-	LCD1602_noBlink();
-	LCD1602_clear();
-	HAL_ADC_Start(&hadc1);
-	HAL_ADC_Start_DMA(&hadc1, (uint32_t*)dma_buffer, 16);
-	SetSystemTime();
+  LCD_D0_GPIO_Port, LCD_D0_Pin, LCD_D1_Pin, LCD_D2_Pin, LCD_D3_Pin);
+  LCD1602_noCursor();
+  LCD1602_noBlink();
+  LCD1602_clear();
+  HAL_ADC_Start(&hadc1);
+  HAL_ADC_Start_DMA(&hadc1, (uint32_t*)dma_buffer, 16);
+  SetSystemTime();
   /* USER CODE END 2 */
 
   /* USER CODE BEGIN RTOS_MUTEX */

@@ -55,7 +55,14 @@ static void LCD1602_write4bitCommand(uint8_t nibble);
 
 //***** Functions definitions *****//
 //Private functions
-//1) Enable EN pulse
+
+/**
+ *  \brief Brief description
+ *  
+ *  \return Return description
+ *  
+ *  \details More details
+ */
 static void LCD1602_EnablePulse(void)
 {
 	HAL_GPIO_WritePin(PORT_RS_and_E, PIN_E, GPIO_PIN_SET);
@@ -63,14 +70,29 @@ static void LCD1602_EnablePulse(void)
 	HAL_GPIO_WritePin(PORT_RS_and_E, PIN_E, GPIO_PIN_RESET);
 	LCD1602_TIM_MicorSecDelay(60);
 }
-//2) RS control
+
+/**
+ *  \brief Brief description
+ *  
+ *  \param [in] state Description for state
+ *  \return Return description
+ *  
+ *  \details More details
+ */
 static void LCD1602_RS(bool state)
 {
 	if(state) HAL_GPIO_WritePin(PORT_RS_and_E, PIN_RS, GPIO_PIN_SET);
 	else HAL_GPIO_WritePin(PORT_RS_and_E, PIN_RS, GPIO_PIN_RESET);
 }
 
-//3) Write Parallel interface
+/**
+ *  \brief Brief description
+ *  
+ *  \param [in] byte Description for byte
+ *  \return Return description
+ *  
+ *  \details More details
+ */
 static void LCD1602_write(uint8_t byte)
 {
 	uint8_t LSB_nibble = byte&0xF, MSB_nibble = (byte>>4)&0xF;
@@ -111,7 +133,13 @@ static void LCD1602_write(uint8_t byte)
 		LCD1602_EnablePulse();
 	}
 }
-//4) Microsecond delay functions
+/**
+ *  \brief Brief description
+ *  
+ *  \return Return description
+ *  
+ *  \details More details
+ */
 static void LCD1602_TIM_Config(void)
 {
 	RCC_ClkInitTypeDef myCLKtypeDef;
@@ -146,6 +174,14 @@ static void LCD1602_TIM_Config(void)
 	TIM3->EGR = 1; 					//Update generate auto
 	TIM3->SR &= ~(0x0001);	//Clear Update interrupt flag
 }
+/**
+ *  \brief Brief description
+ *  
+ *  \param [in] uSecDelay Description for uSecDelay
+ *  \return Return description
+ *  
+ *  \details More details
+ */
 static void LCD1602_TIM_MicorSecDelay(uint32_t uSecDelay)
 {
 	TIM3->ARR = uSecDelay-1;
@@ -153,7 +189,14 @@ static void LCD1602_TIM_MicorSecDelay(uint32_t uSecDelay)
 	TIM3->CR1 |= 1UL;
 	while((TIM3->SR&0x0001) != 1);
 }
-//5) Write command
+/**
+ *  \brief Brief description
+ *  
+ *  \param [in] command Description for command
+ *  \return Return description
+ *  
+ *  \details More details
+ */
 static void LCD1602_writeCommand(uint8_t command)
 {
 	//Set RS to 0
@@ -161,7 +204,14 @@ static void LCD1602_writeCommand(uint8_t command)
 	//Call low level write parallel function
 	LCD1602_write(command);
 }
-//6) Write 8 bits data
+/**
+ *  \brief Brief description
+ *  
+ *  \param [in] data Description for data
+ *  \return Return description
+ *  
+ *  \details More details
+ */
 static void LCD1602_writeData(uint8_t data)
 {
 	//Set RS to 1
@@ -169,7 +219,14 @@ static void LCD1602_writeData(uint8_t data)
 	//Call low level write parallel function
 	LCD1602_write(data);
 }
-//7) Write 4 bits command, *FOR 4 BITS MODE ONLY*
+/**
+ *  \brief Brief description
+ *  
+ *  \param [in] nibble Description for nibble
+ *  \return Return description
+ *  
+ *  \details More details
+ */
 static void LCD1602_write4bitCommand(uint8_t nibble)
 {
 	uint8_t LSB_nibble = nibble&0xF;
@@ -185,7 +242,26 @@ static void LCD1602_write4bitCommand(uint8_t nibble)
 }
 
 //Public functions
-//1) LCD begin 8 bits function
+/**
+ *  \brief Brief description
+ *  
+ *  \param [in] PORT_RS_E Description for PORT_RS_E
+ *  \param [in] RS Description for RS
+ *  \param [in] E Description for E
+ *  \param [in] PORT_LSBs0to3 Description for PORT_LSBs0to3
+ *  \param [in] D0 Description for D0
+ *  \param [in] D1 Description for D1
+ *  \param [in] D2 Description for D2
+ *  \param [in] D3 Description for D3
+ *  \param [in] PORT_MSBs4to7 Description for PORT_MSBs4to7
+ *  \param [in] D4 Description for D4
+ *  \param [in] D5 Description for D5
+ *  \param [in] D6 Description for D6
+ *  \param [in] D7 Description for D7
+ *  \return Return description
+ *  
+ *  \details More details
+ */
 void LCD1602_Begin8BIT(GPIO_TypeDef* PORT_RS_E, uint16_t RS, uint16_t E, GPIO_TypeDef* PORT_LSBs0to3, uint16_t D0, uint16_t D1, uint16_t D2, uint16_t D3, GPIO_TypeDef* PORT_MSBs4to7, uint16_t D4, uint16_t D5, uint16_t D6, uint16_t D7)
 {
 	//Set GPIO Ports and Pins data
@@ -227,7 +303,21 @@ void LCD1602_Begin8BIT(GPIO_TypeDef* PORT_RS_E, uint16_t RS, uint16_t E, GPIO_Ty
 	LCD1602_writeCommand(LCD_CLEARDISPLAY);
 	HAL_Delay(2);
 }
-//2) LCD begin 4 bits function
+/**
+ *  \brief Brief description
+ *  
+ *  \param [in] PORT_RS_E Description for PORT_RS_E
+ *  \param [in] RS Description for RS
+ *  \param [in] E Description for E
+ *  \param [in] PORT_MSBs4to7 Description for PORT_MSBs4to7
+ *  \param [in] D4 Description for D4
+ *  \param [in] D5 Description for D5
+ *  \param [in] D6 Description for D6
+ *  \param [in] D7 Description for D7
+ *  \return Return description
+ *  
+ *  \details More details
+ */
 void LCD1602_Begin4BIT(GPIO_TypeDef* PORT_RS_E, uint16_t RS, uint16_t E, GPIO_TypeDef* PORT_MSBs4to7, uint16_t D4, uint16_t D5, uint16_t D6, uint16_t D7)
 {
 	//Set GPIO Ports and Pins data
@@ -267,15 +357,30 @@ void LCD1602_Begin4BIT(GPIO_TypeDef* PORT_RS_E, uint16_t RS, uint16_t E, GPIO_Ty
 	LCD1602_writeCommand(LCD_FUNCTIONSET | LCD_FUNCTION_N);
 	HAL_Delay(3);
 }
-//3) LCD print string
-void LCD1602_print(char string[])
+/**
+ *  \brief Brief description
+ *  
+ *  \param [in] string Description for string
+ *  \return Return description
+ *  
+ *  \details More details
+ */
+void LCD1602_print(uint8_t *string)
 {
 	for(uint8_t i=0;  i< 16 && string[i]!=NULL; i++)
 	{
 		LCD1602_writeData((uint8_t)string[i]);
 	}
 }
-//4) set cursor position
+/**
+ *  \brief Brief description
+ *  
+ *  \param [in] row Description for row
+ *  \param [in] col Description for col
+ *  \return Return description
+ *  
+ *  \details More details
+ */
 void LCD1602_setCursor(uint8_t row, uint8_t col)
 {
 	uint8_t maskData;
@@ -290,66 +395,145 @@ void LCD1602_setCursor(uint8_t row, uint8_t col)
 		maskData |= (0xc0);
 		LCD1602_writeCommand(maskData);
 	}
-}	
+}
+/**
+ *  \brief Brief description
+ *  
+ *  \return Return description
+ *  
+ *  \details More details
+ */	
 void LCD1602_1stLine(void)
 {
 	LCD1602_setCursor(1,1);
 }
+/**
+ *  \brief Brief description
+ *  
+ *  \return Return description
+ *  
+ *  \details More details
+ */
 void LCD1602_2ndLine(void)
 {
 	LCD1602_setCursor(2,1);
 }
-//5) Enable two lines
+/**
+ *  \brief Brief description
+ *  
+ *  \return Return description
+ *  
+ *  \details More details
+ */
 void LCD1602_TwoLines(void)
 {
 	FunctionSet |= (0x08);
 	LCD1602_writeCommand(FunctionSet);
 }
+/**
+ *  \brief Brief description
+ *  
+ *  \return Return description
+ *  
+ *  \details More details
+ */
 void LCD1602_OneLine(void)
 {
 	FunctionSet &= ~(0x08);
 	LCD1602_writeCommand(FunctionSet);
 }
-//6) Cursor ON/OFF
+/**
+ *  \brief Brief description
+ *  
+ *  \return Return description
+ *  
+ *  \details More details
+ */
 void LCD1602_noCursor(void)
 {
 	DisplayControl &= ~(0x02);
 	LCD1602_writeCommand(DisplayControl);
 }
+/**
+ *  \brief Brief description
+ *  
+ *  \return Return description
+ *  
+ *  \details More details
+ */
 void LCD1602_cursor(void)
 {
 	DisplayControl |= (0x02);
 	LCD1602_writeCommand(DisplayControl);
 }
-//7) Clear display
+/**
+ *  \brief Brief description
+ *  
+ *  \return Return description
+ *  
+ *  \details More details
+ */
 void LCD1602_clear(void)
 {
 	LCD1602_writeCommand(LCD_CLEARDISPLAY);
 	HAL_Delay(3);
 }
-//8) Blinking cursor
+/**
+ *  \brief Brief description
+ *  
+ *  \return Return description
+ *  
+ *  \details More details
+ */
 void LCD1602_noBlink(void)
 {
 	DisplayControl &= ~(0x01);
 	LCD1602_writeCommand(DisplayControl);
 }
+/**
+ *  \brief Brief description
+ *  
+ *  \return Return description
+ *  
+ *  \details More details
+ */
 void LCD1602_blink(void)
 {
 	DisplayControl |= 0x01;
 	LCD1602_writeCommand(DisplayControl);
 }
-//9) Display ON/OFF
+/**
+ *  \brief Brief description
+ *  
+ *  \return Return description
+ *  
+ *  \details More details
+ */
 void LCD1602_noDisplay(void)
 {
 	DisplayControl &= ~(0x04);
 	LCD1602_writeCommand(DisplayControl);
 }
+/**
+ *  \brief Brief description
+ *  
+ *  \return Return description
+ *  
+ *  \details More details
+ */
 void LCD1602_display(void)
 {
 	DisplayControl |= (0x04);
 	LCD1602_writeCommand(DisplayControl);
 }
-//10) Shift Display, right or left
+/**
+ *  \brief Brief description
+ *  
+ *  \param [in] num Description for num
+ *  \return Return description
+ *  
+ *  \details More details
+ */
 void LCD1602_shiftToRight(uint8_t num)
 {
 	for(uint8_t i=0; i<num;i++)
@@ -357,6 +541,14 @@ void LCD1602_shiftToRight(uint8_t num)
 		LCD1602_writeCommand(0x1c);
 	}
 }
+/**
+ *  \brief Brief description
+ *  
+ *  \param [in] num Description for num
+ *  \return Return description
+ *  
+ *  \details More details
+ */
 void LCD1602_shiftToLeft(uint8_t num)
 {
 	for(uint8_t i=0; i<num;i++)
@@ -365,11 +557,18 @@ void LCD1602_shiftToLeft(uint8_t num)
 	}
 }
 
-//********** Print numbers to LCD **********//
-//1. Integer
+/**
+ *  \brief Brief description
+ *  
+ *  \param [in] number Description for number
+ *  \param [in] digitnumber Description for digitnumber
+ *  \return Return description
+ *  
+ *  \details More details
+ */
 void LCD1602_PrintInt(int number, uint8_t digitnumber)
 {
-	char numStr[16];
+	uint8_t numStr[16];
 	switch (digitnumber)
 	{
 		case 1:
@@ -390,10 +589,18 @@ void LCD1602_PrintInt(int number, uint8_t digitnumber)
 	}
 	LCD1602_print(numStr);
 }
-//2. Float
+/**
+ *  \brief Brief description
+ *  
+ *  \param [in] number Description for number
+ *  \param [in] decimalPoints Description for decimalPoints
+ *  \return Return description
+ *  
+ *  \details More details
+ */
 void LCD1602_PrintFloat(float number, int decimalPoints)
 {
-	char numStr[16];
+	uint8_t numStr[16];
 	sprintf(numStr,"%.*f",decimalPoints, number);
 	LCD1602_print(numStr);
 }
