@@ -1,6 +1,6 @@
 /*
 	Library: 				LCD 16X2 - 
-	Written by:  		Mohamed Yaqoob
+	Written by:  		Mohamed Ashraf
 	Date Written:		04/12/2017
 	Description:		This is a library for the standard 16X2 LCD display, for the STM32 MCUs based on HAL libraries. 
 						It perfroms the basic Text/Number printing to your 16X2 LCD, in 8 bits and 4 bits modes of operation.
