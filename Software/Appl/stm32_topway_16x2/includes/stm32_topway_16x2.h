@@ -61,7 +61,7 @@ void LCD1602_Begin8BIT(GPIO_TypeDef* PORT_RS_E, uint16_t RS, uint16_t E, GPIO_Ty
 //2) LCD begin 4 bits function
 void LCD1602_Begin4BIT(GPIO_TypeDef* PORT_RS_E, uint16_t RS, uint16_t E, GPIO_TypeDef* PORT_MSBs4to7, uint16_t D4, uint16_t D5, uint16_t D6, uint16_t D7);
 //3) LCD print string
-void LCD1602_print(char string[]);
+void LCD1602_print(uint8_t *string);
 //4) set cursor position
 void LCD1602_setCursor(uint8_t row, uint8_t col);
 void LCD1602_1stLine(void);
